@@ -4,6 +4,8 @@ import {
   DrawingUtils,
 } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.1.0/vision_bundle.mjs";
 import { classifyHand, GestureSmoother, GESTURES } from "./gestures.js";
+import { GestureController } from "./controller.js";
+import { createMoleculeViewer } from "./molecule.js";
 
 const WASM_URL = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.1.0/wasm";
 const MODEL_URL =
@@ -41,6 +43,10 @@ let lastVideoTime = -1;
 let lastSeen = 0;
 let currentView = null;
 const smoother = new GestureSmoother();
+const controller = new GestureController();
+const moleculeViewer = createMoleculeViewer(
+  document.getElementById("moleculeViewer")
+);
 
 function showView(key) {
   if (key === currentView) return;
@@ -127,16 +133,28 @@ function loop() {
       const aspect = video.videoWidth / video.videoHeight || 4 / 3;
       const { gesture } = classifyHand(hand, aspect);
       showView(smoother.push(gesture));
-
-      if (showSkeleton.checked) {
-        drawer.drawConnectors(hand, HandLandmarker.HAND_CONNECTIONS, { color: "#66b0a2", lineWidth: 4 });
-        drawer.drawLandmarks(hand, { color: "#f0cd6c", lineWidth: 1, radius: 4 });
-      }
-    } else if (now - lastSeen > LOST_AFTER_MS) {
-      smoother.reset();
-      showView("lost");
-    }
+      const command = controller.update(gesture, hand, now);
+  if (command) {
+  if (command.type === "rotate") {
+    moleculeViewer.rotate(command.dx, command.dy);
+  } else if (command.type === "zoom") {
+    moleculeViewer.zoom(command.delta);
+  } else if (command.type === "reset") {
+    moleculeViewer.reset();
   }
+  }
+
+  if (showSkeleton.checked) {
+    drawer.drawConnectors(hand, HandLandmarker.HAND_CONNECTIONS, { color: "#66b0a2", lineWidth: 4 });
+    drawer.drawLandmarks(hand, { color: "#f0cdc6", lineWidth: 1, radius: 4 });
+  }
+    }
+    } else if (now - lastSeen > LOST_AFTER_MS) {
+    smoother.reset();
+    controller.reset();
+    showView("lost");
+  }
+    
   requestAnimationFrame(loop);
 }
 
