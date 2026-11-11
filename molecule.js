@@ -12,9 +12,18 @@ export function createMoleculeViewer(container) {
   );
   camera.position.z = 7;
 
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setSize(container.clientWidth, container.clientHeight);
-  container.appendChild(renderer.domElement);
+ const renderer = new THREE.WebGLRenderer({
+  antialias: true,
+  alpha: true
+});
+
+renderer.setSize(container.clientWidth, container.clientHeight);
+renderer.domElement.style.position = "relative";
+renderer.domElement.style.display = "block";
+renderer.domElement.style.width = "100%";
+renderer.domElement.style.height = "100%";
+
+container.appendChild(renderer.domElement);
 
   const molecule = new THREE.Group();
   scene.add(molecule);
@@ -42,6 +51,14 @@ export function createMoleculeViewer(container) {
     molecule.add(mesh);
   }
 
+function showWater() {
+  while (molecule.children.length > 0) {
+    const child = molecule.children[0];
+    molecule.remove(child);
+    child.geometry.dispose();
+    child.material.dispose();
+  }
+
   const oxygen = new THREE.Vector3(0, 0.5, 0);
   const hydrogen1 = new THREE.Vector3(-1.1, -0.5, 0);
   const hydrogen2 = new THREE.Vector3(1.1, -0.5, 0);
@@ -52,6 +69,236 @@ export function createMoleculeViewer(container) {
   atom(0.55, 0xff3333, ...oxygen.toArray());
   atom(0.35, 0xffffff, ...hydrogen1.toArray());
   atom(0.35, 0xffffff, ...hydrogen2.toArray());
+}
+
+showWater();
+const MOLECULES = [
+  "Water",
+  "Caffeine",
+  "Aspirin",
+  "Adenine",
+  "Ethanol",
+  "Benzene",
+  "Glucose"
+];
+
+let currentMolecule = 0;
+function clearMolecule() {
+  while (molecule.children.length > 0) {
+    const child = molecule.children[0];
+    molecule.remove(child);
+    child.geometry.dispose();
+    child.material.dispose();
+  }
+}
+
+
+
+function showEthanol() {
+  clearMolecule();
+
+  const carbon1 = new THREE.Vector3(-1.2, 0, 0);
+  const carbon2 = new THREE.Vector3(0, 0);
+  const oxygen = new THREE.Vector3(1.2, 0.3, 0);
+  const hydrogen = new THREE.Vector3(2, -0.3, 0);
+
+  bond(carbon1, carbon2);
+  bond(carbon2, oxygen);
+  bond(oxygen, hydrogen);
+
+  atom(0.45, 0x333333, ...carbon1.toArray());
+  atom(0.45, 0x333333, ...carbon2.toArray());
+  atom(0.5, 0xff3333, ...oxygen.toArray());
+  atom(0.3, 0xffffff, ...hydrogen.toArray());
+}
+function showCaffeine() {
+  clearMolecule();
+
+  const positions = [
+    [-1.4, 0.5, 0], [-0.5, 1.1, 0],
+    [0.5, 1.1, 0], [1.4, 0.5, 0],
+    [0.8, -0.5, 0], [-0.3, -0.7, 0],
+    [-1.4, -0.6, 0], [1.7, -0.6, 0]
+  ];
+
+  const points = positions.map(
+    ([x, y, z]) => new THREE.Vector3(x, y, z)
+  );
+
+  const connections = [
+    [0, 1], [1, 2], [2, 3], [3, 4],
+    [4, 5], [5, 6], [6, 0], [4, 7]
+  ];
+
+  connections.forEach(([a, b]) => bond(points[a], points[b]));
+
+  points.forEach((p, i) => {
+    const color = [1, 3, 6, 7].includes(i)
+      ? 0x3366ff
+      : 0x333333;
+
+    atom(0.35, color, ...p.toArray());
+  });
+}
+  
+function showAspirin() {
+  clearMolecule();
+
+  const positions = [
+    [-1.0, 1.0, 0],
+    [0.0, 1.5, 0],
+    [1.0, 1.0, 0],
+    [1.0, 0.0, 0],
+    [0.0, -0.5, 0],
+    [-1.0, 0.0, 0],
+    [2.0, 1.5, 0],
+    [2.8, 1.0, 0],
+    [-2.0, 0.0, 0]
+  ];
+
+  const points = positions.map(
+    ([x, y, z]) => new THREE.Vector3(x, y, z)
+  );
+
+  const connections = [
+    [0, 1], [1, 2], [2, 3],
+    [3, 4], [4, 5], [5, 0],
+    [2, 6], [6, 7], [5, 8]
+  ];
+
+  connections.forEach(([a, b]) => {
+    bond(points[a], points[b]);
+  });
+
+  points.forEach((p, i) => {
+    const color = [7, 8].includes(i)
+      ? 0xff3333
+      : 0x333333;
+
+    atom(0.35, color, ...p.toArray());
+  });
+}
+  
+
+function showAdenine() {
+  clearMolecule();
+
+  const positions = [
+    [-1.2, 0, 0],
+    [-0.6, 1, 0],
+    [0.6, 1, 0],
+    [1.2, 0, 0],
+    [0.6, -1, 0],
+    [-0.6, -1, 0],
+    [1.8, 1, 0],
+    [2.8, 0.5, 0],
+    [2.5, -0.7, 0],
+    [1.3, -1.3, 0]
+  ];
+
+  const points = positions.map(
+    ([x, y, z]) => new THREE.Vector3(x, y, z)
+  );
+
+  const connections = [
+    [0, 1], [1, 2], [2, 3],
+    [3, 4], [4, 5], [5, 0],
+    [2, 6], [6, 7], [7, 8],
+    [8, 9], [9, 4]
+  ];
+
+  connections.forEach(([a, b]) => bond(points[a], points[b]));
+
+  points.forEach((p, i) => {
+    const color = [1, 3, 6, 8].includes(i)
+      ? 0x3366ff
+      : 0x333333;
+
+    atom(0.35, color, ...p.toArray());
+  });
+}
+function showBenzene() {
+  clearMolecule();
+
+  const carbons = [];
+  const hydrogens = [];
+
+  for (let i = 0; i < 6; i++) {
+    const angle = (i * Math.PI) / 3;
+
+    carbons.push(new THREE.Vector3(
+      1.2 * Math.cos(angle),
+      1.2 * Math.sin(angle),
+      0
+    ));
+
+    hydrogens.push(new THREE.Vector3(
+      2.1 * Math.cos(angle),
+      2.1 * Math.sin(angle),
+      0
+    ));
+  }
+
+  for (let i = 0; i < 6; i++) {
+    bond(carbons[i], carbons[(i + 1) % 6]);
+    bond(carbons[i], hydrogens[i]);
+
+    atom(0.35, 0x333333, ...carbons[i].toArray());
+    atom(0.25, 0xffffff, ...hydrogens[i].toArray());
+  }
+}
+  function showGlucose() {
+  clearMolecule();
+
+  const carbons = [];
+  const oxygens = [];
+
+  for (let i = 0; i < 6; i++) {
+    const angle = (i * Math.PI) / 3;
+
+    carbons.push(new THREE.Vector3(
+      1.2 * Math.cos(angle),
+      1.2 * Math.sin(angle),
+      0
+    ));
+  }
+
+  for (let i = 0; i < 6; i++) {
+    bond(carbons[i], carbons[(i + 1) % 6]);
+
+    const angle = (i * Math.PI) / 3;
+    oxygens.push(new THREE.Vector3(
+      2.1 * Math.cos(angle),
+      2.1 * Math.sin(angle),
+      0
+    ));
+
+    bond(carbons[i], oxygens[i]);
+
+    atom(0.35, 0x333333, ...carbons[i].toArray());
+    atom(0.3, 0xff3333, ...oxygens[i].toArray());
+  }
+}
+  function switchMolecule(index) {
+  currentMolecule = (index + MOLECULES.length) % MOLECULES.length;
+
+  if (currentMolecule === 0) {
+    showWater();
+  } else if (currentMolecule === 1) {
+    showCaffeine();
+  } else if (currentMolecule === 2) {
+    showAspirin();
+    } else if (currentMolecule === 3) {
+  showAdenine();
+  } else if (currentMolecule === 4) {
+    showEthanol();
+  } else if (currentMolecule === 5) {
+  showBenzene();
+} else if (currentMolecule === 6) {
+  showGlucose();
+}
+}
+
 
   scene.add(new THREE.AmbientLight(0xffffff, 1.5));
 
@@ -66,6 +313,9 @@ export function createMoleculeViewer(container) {
   animate();
 
   return {
+    switchMolecule,
+    MOLECULES,
+    
     rotate(dx, dy) {
       molecule.rotation.y += dx * 5;
       molecule.rotation.x += dy * 5;
